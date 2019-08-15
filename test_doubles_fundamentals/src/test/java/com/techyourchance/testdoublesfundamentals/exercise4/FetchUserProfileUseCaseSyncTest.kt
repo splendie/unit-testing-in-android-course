@@ -23,43 +23,93 @@ class FetchUserProfileUseCaseSyncTest {
         SUT = FetchUserProfileUseCaseSync(endpointSyncTd, cacheTd)
     }
 
-    // fetchUserProfileSync, if network error then network error is returned
-
-    // fetchUserProfileSync, if success then user object is cached
-    // fetchUserProfileSync, if fail  then object is not cached
-
     @Test
-    fun fetch_correctUserId_successReturned() {
-        val status = SUT.fetchUserProfileSync(CORRECT_USER_ID)
+    fun fetchUserProfileSync_success_successReturned() {
+        val status = SUT.fetchUserProfileSync(USER_ID)
         Assert.assertThat(status, `is`<FetchUserProfileUseCaseSync.UseCaseResult>(FetchUserProfileUseCaseSync.UseCaseResult.SUCCESS))
     }
 
     @Test
-    fun fetch_emptyUserId_failureReturned() {
+    fun fetchUserProfileSync_emptyUserId_failureReturned() {
+        val status = SUT.fetchUserProfileSync("")
+        Assert.assertThat(status, `is`<FetchUserProfileUseCaseSync.UseCaseResult>(FetchUserProfileUseCaseSync.UseCaseResult.FAILURE))
+    }
+
+    @Test
+    fun fetchUserProfileSync_authError_failureReturned() {
         endpointSyncTd.isAuthError = true
         val status = SUT.fetchUserProfileSync("")
         Assert.assertThat(status, `is`<FetchUserProfileUseCaseSync.UseCaseResult>(FetchUserProfileUseCaseSync.UseCaseResult.FAILURE))
     }
 
     @Test
-    fun fetch_correctUserId_userIdIsCached() {
-        val userId = CORRECT_USER_ID
+    fun fetchUserProfileSync_serverError_failureReturned() {
+        endpointSyncTd.isServerError = true
+        val status = SUT.fetchUserProfileSync("")
+        Assert.assertThat(status, `is`<FetchUserProfileUseCaseSync.UseCaseResult>(FetchUserProfileUseCaseSync.UseCaseResult.FAILURE))
+    }
+
+    @Test
+    fun fetchUserProfileSync_generalError_failureReturned() {
+        endpointSyncTd.isGeneralError = true
+        val status = SUT.fetchUserProfileSync("")
+        Assert.assertThat(status, `is`<FetchUserProfileUseCaseSync.UseCaseResult>(FetchUserProfileUseCaseSync.UseCaseResult.FAILURE))
+    }
+
+    @Test
+    fun fetchUserProfileSync_success_userCached() {
+        val userId = USER_ID
         SUT.fetchUserProfileSync(userId)
         val result = cacheTd.getUser(userId)
         Assert.assertNotNull(result)
     }
 
     @Test
-    fun fetch_emptyUserId_userIdIsNotCached() {
-        endpointSyncTd.isAuthError = true
+    fun fetchUserProfileSync_emptyUserId_userNotCached() {
         val userId = ""
         SUT.fetchUserProfileSync(userId)
         val result = cacheTd.getUser(userId)
         Assert.assertNull(result)
     }
 
+    @Test
+    fun fetchUserProfileSync_authError_userNotCached() {
+        endpointSyncTd.isAuthError = true
+        val userId = USER_ID
+        SUT.fetchUserProfileSync(userId)
+        val result = cacheTd.getUser(userId)
+        Assert.assertNull(result)
+    }
+
+    @Test
+    fun fetchUserProfileSync_generalError_userNotCached() {
+        endpointSyncTd.isGeneralError = true
+        val userId = USER_ID
+        SUT.fetchUserProfileSync(userId)
+        val result = cacheTd.getUser(userId)
+        Assert.assertNull(result)
+    }
+
+    @Test
+    fun fetchUserProfileSync_serverError_userNotCached() {
+        endpointSyncTd.isServerError = true
+        val userId = USER_ID
+        SUT.fetchUserProfileSync(userId)
+        val result = cacheTd.getUser(userId)
+        Assert.assertNull(result)
+    }
+
+    @Test
+    fun fetchUserProfileSync_success_userIdPassedToEndpoint() {
+        SUT.fetchUserProfileSync(USER_ID)
+        val userId = endpointSyncTd.userId
+        Assert.assertThat(USER_ID, `is`<String>(userId))
+    }
+
     companion object {
-        const val CORRECT_USER_ID = "correct_user_id"
+        const val USER_ID = "userId"
+        const val FULL_NAME = "Full Name"
+        const val IMAGE_URL = "someImageUrl"
     }
 
 //    ----------------------------------------------------------------------------------------------
@@ -70,22 +120,22 @@ class FetchUserProfileUseCaseSyncTest {
         var isServerError: Boolean = false
         var isGeneralError: Boolean = false
 
+        var userId: String = ""
+
         override fun getUserProfile(userId: String): UserProfileHttpEndpointSync.EndpointResult {
+            this.userId = userId
+
             return if (isAuthError) {
                 UserProfileHttpEndpointSync.EndpointResult(status = EndpointResultStatus.AUTH_ERROR)
             } else if (isServerError) {
                 UserProfileHttpEndpointSync.EndpointResult(status = EndpointResultStatus.SERVER_ERROR)
-            } else if (isGeneralError) {
+            } else if (isGeneralError || userId.isEmpty()) {
                 UserProfileHttpEndpointSync.EndpointResult(status = EndpointResultStatus.GENERAL_ERROR)
             } else {
-                UserProfileHttpEndpointSync.EndpointResult(status = EndpointResultStatus.SUCCESS, userId = userId, fullName = FULLNAME, imageUrl = IMAGE_URL)
+                UserProfileHttpEndpointSync.EndpointResult(status = EndpointResultStatus.SUCCESS, userId = userId, fullName = FULL_NAME, imageUrl = IMAGE_URL)
             }
         }
 
-        companion object {
-            const val FULLNAME = "Full Name"
-            const val IMAGE_URL = "someImageUrl"
-        }
     }
 
     // playing the role of "fake" test double
