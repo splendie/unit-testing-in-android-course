@@ -7,7 +7,6 @@ import com.techyourchance.mockitofundamentals.exercise5.networking.UpdateUsernam
 import com.techyourchance.mockitofundamentals.exercise5.users.User
 import com.techyourchance.mockitofundamentals.exercise5.users.UsersCache
 import org.hamcrest.CoreMatchers.`is`
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -72,15 +71,26 @@ class UpdateUsernameUseCaseSyncTest {
         // Assert
         verifyNoMoreInteractions(usersCacheMock)
     }
-//
+
+    //TODO
 //    @Test
 //    fun updateUsernameSync_generalError_userNotCached() {
 //
 //    }
+
+    //TODO
     // updateUsernameSync_serverError_userNotCached
+
+    //TODO
     // updateUsernameSync_success_eventBusPosted
+
+    //TODO
     // updateUsernameSync_authError_eventBusNotPosted
+
+    //TODO
     // updateUsernameSync_generalError_eventBusNotPosted
+
+    //TODO
     // updateUsernameSync_serverError_eventBusNotPosted
 
     private fun success() {
@@ -101,7 +111,6 @@ class UpdateUsernameUseCaseSyncTest {
     private fun generalError() {
         `when`(updateUsernameHttpEndpointSyncMock.updateUsername(ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(EndpointResult(EndpointResultStatus.GENERAL_ERROR))
-
     }
 
     companion object {

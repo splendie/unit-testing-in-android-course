@@ -234,7 +234,7 @@ public class FetchUserUseCaseSyncTestRef {
     }
 
     private void endpointSuccess() {
-        // endpoint test double is set up for success by default; this method is for clarity of intent
+        // endpointMock test double is set up for success by default; this method is for clarity of intent
     }
 
     private void endpointAuthError() {
