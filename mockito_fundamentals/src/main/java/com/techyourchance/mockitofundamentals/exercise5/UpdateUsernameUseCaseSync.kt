@@ -28,8 +28,8 @@ class UpdateUsernameUseCaseSync(private val updateUsernameHttpEndpointSync: Upda
 
         return if (isSuccessfulEndpointResult(endpointResult)) {
             // the bug here is reversed arguments
-            val user = User(endpointResult.getUsername(), endpointResult.userId)
-            eventBusPoster.postEvent(UserDetailsChangedEvent(User(userId, username)))
+            val user = User(userId = endpointResult.userId, username = endpointResult.getUsername())
+            eventBusPoster.postEvent(UserDetailsChangedEvent(user))
             usersCache.cacheUser(user)
 
             UseCaseResult.SUCCESS
@@ -40,6 +40,6 @@ class UpdateUsernameUseCaseSync(private val updateUsernameHttpEndpointSync: Upda
 
     private fun isSuccessfulEndpointResult(endpointResult: EndpointResult): Boolean {
         // the bug here is the wrong definition of successful response
-        return endpointResult.status === EndpointResultStatus.SUCCESS || endpointResult.status === EndpointResultStatus.GENERAL_ERROR
+        return endpointResult.status === EndpointResultStatus.SUCCESS
     }
 }

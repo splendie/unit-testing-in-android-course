@@ -20,7 +20,7 @@ interface UpdateUsernameHttpEndpointSync {
     class EndpointResult(val status: EndpointResultStatus, val userId: String = "", private val mUsername: String = "") {
 
         fun getUsername(): String {
-            return userId
+            return mUsername
         }
     }
 }
