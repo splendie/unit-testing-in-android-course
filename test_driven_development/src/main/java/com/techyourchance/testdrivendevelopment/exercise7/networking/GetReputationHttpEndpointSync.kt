@@ -8,11 +8,12 @@ interface GetReputationHttpEndpointSync {
     enum class EndpointStatus {
         SUCCESS,
         GENERAL_ERROR,
-        NETWORK_ERROR
+        SERVER_ERROR
     }
 
     class EndpointResult(val status: EndpointStatus, val reputation: Int)
 
+    @Throws(NetworkErrorException::class)
     fun fetchReputationSync(userId: String): EndpointResult
 
     companion object {

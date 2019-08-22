@@ -1,9 +1,12 @@
 package com.techyourchance.testdrivendevelopment.exercise7
 
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.doThrow
 import com.techyourchance.testdrivendevelopment.exercise7.FetchReputationUseCaseSync.*
 import com.techyourchance.testdrivendevelopment.exercise7.networking.GetReputationHttpEndpointSync
 import com.techyourchance.testdrivendevelopment.exercise7.networking.GetReputationHttpEndpointSync.*
+import com.techyourchance.testdrivendevelopment.exercise7.networking.GetReputationHttpEndpointSync.Companion.GOOD_REPUTATION
+import com.techyourchance.testdrivendevelopment.exercise7.networking.NetworkErrorException
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.Before
@@ -52,20 +55,58 @@ internal class FetchReputationUseCaseSyncTest {
 
         val result = SUT.fetchReputation(userId)
 
-        assertThat(result, `is`(UseCaseResult.SUCCESS))
+        assertThat(result.status, `is`(UseCaseResultStatus.SUCCESS))
     }
 
     @Test
-    fun fetchReputation_networkError_failureReturned() {
+    fun fetchReputation_generalError_failureReturned() {
         generalError()
         val userId = USER_ID
 
         val result = SUT.fetchReputation(userId)
 
-        assertThat(result, `is`(UseCaseResult.FAILURE))
+        assertThat(result.status, `is`(UseCaseResultStatus.FAILURE))
     }
 
+    @Test
+    fun fetchReputation_networkError_networkErrorReturned() {
+        networkError()
+        val userId = USER_ID
 
+        val result = SUT.fetchReputation(userId)
+
+        assertThat(result.status, `is`(UseCaseResultStatus.NETWORK_ERROR))
+    }
+
+    @Test
+    fun fetchReputation_success_reputationReturned() {
+        success()
+        val userId = USER_ID
+
+        val result = SUT.fetchReputation(userId)
+
+        assertThat(result.reputation, `is`(GOOD_REPUTATION))
+    }
+
+    @Test
+    fun fetchReputation_generalError_zeroReturned() {
+        generalError()
+        val userId = USER_ID
+
+        val result = SUT.fetchReputation(userId)
+
+        assertThat(result.reputation, `is`(0))
+    }
+
+    @Test
+    fun fetchReputation_networkError_zeroReturned() {
+        networkError()
+        val userId = USER_ID
+
+        val result = SUT.fetchReputation(userId)
+
+        assertThat(result.reputation, `is`(0))
+    }
 
     //region helper methods
     private fun success() {
@@ -80,7 +121,7 @@ internal class FetchReputationUseCaseSyncTest {
 
     private fun networkError() {
         `when`(endpointMock.fetchReputationSync(ArgumentMatchers.anyString()))
-                .thenReturn(EndpointResult(EndpointStatus.NETWORK_ERROR, GetReputationHttpEndpointSync.UNKNOWN_REPUTATION))
+                .doThrow(NetworkErrorException())
     }
 
     //endregion helper methods
